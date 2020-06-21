@@ -8,8 +8,27 @@
       @keyup.enter="addTodo"
     />
 
-    <div v-for="todo in todos" :key="todo.id" class="todo-item">
-      {{ todo.title }}
+    <div v-for="(todo, index) in todos" :key="todo.id" class="todo-item">
+      <div class="todo-item-left">
+        <div
+          v-if="!todo.editing"
+          @click="editTodo(todo)"
+          class="todo-item-label"
+        >
+          {{ todo.title }}
+        </div>
+        <input
+          v-else
+          class="todo-item-edit"
+          type="text"
+          v-model="todo.title"
+          @blur="doneEdit(todo)"
+          @keyup.enter="doneEdit(todo)"
+          @keyup.esc="cancelEdit(todo)"
+          v-focus
+        />
+        <div class="remove-item" @click="removeTodo(index)">&times;</div>
+      </div>
     </div>
   </div>
 </template>
@@ -21,19 +40,30 @@ export default {
     return {
       newTodo: "",
       idForTodo: 3,
+      beforeEditCache: "",
       todos: [
         {
           id: 1,
           title: "Finish Vue Todo App",
-          completed: false
+          completed: false,
+          editing: false
         },
         {
           id: 2,
           title: "Take over world",
-          completed: false
+          completed: false,
+          editing: false
         }
       ]
     };
+  },
+  directives: {
+    focus: {
+      // directive definition
+      inserted: function(el) {
+        el.focus();
+      }
+    }
   },
   methods: {
     addTodo() {
@@ -49,6 +79,20 @@ export default {
 
       this.newTodo = "";
       this.idForTodo++;
+    },
+    removeTodo(index) {
+      this.todos.splice(index, 1);
+    },
+    editTodo(todo) {
+      this.beforeEditCache = todo.title;
+      todo.editing = true;
+    },
+    doneEdit(todo) {
+      todo.editing = false;
+    },
+    cancelEdit(todo) {
+      todo.title = this.beforeEditCache;
+      todo.editing = false;
     }
   }
 };
