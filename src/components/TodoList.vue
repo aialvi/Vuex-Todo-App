@@ -7,40 +7,80 @@
       v-model="newTodo"
       @keyup.enter="addTodo"
     />
+    <transition-group
+      name="fade"
+      enter-active-class="animated fadeInUp"
+      leave-active-class="animated fadeOutDown"
+    >
+      <todo-item
+        v-for="todo in todosFiltered"
+        :key="todo.id"
+        :todo="todo"
+        :checkAll="!anyRemaining"
+        @removeTodo="removeTodo"
+        @finishedEdit="finishedEdit"
+      >
+      </todo-item>
+    </transition-group>
 
-    <div v-for="(todo, index) in todos" :key="todo.id" class="todo-item">
-      <div class="todo-item-left">
-        <div
-          v-if="!todo.editing"
-          @click="editTodo(todo)"
-          class="todo-item-label"
-        >
-          {{ todo.title }}
-        </div>
-        <input
-          v-else
-          class="todo-item-edit"
-          type="text"
-          v-model="todo.title"
-          @blur="doneEdit(todo)"
-          @keyup.enter="doneEdit(todo)"
-          @keyup.esc="cancelEdit(todo)"
-          v-focus
-        />
-        <div class="remove-item" @click="removeTodo(index)">&times;</div>
+    <div class="extra-container">
+      <div>
+        <label>
+          <input
+            type="checkbox"
+            :checked="!anyRemaining"
+            @change="checkAllTodos"
+          />
+          Check All
+        </label>
       </div>
+      <div>{{ remaining }} items left</div>
+    </div>
+
+    <div class="extra-container">
+      <div>
+        <button :class="{ active: filter == 'all' }" @click="filter = 'all'">
+          All
+        </button>
+        <button
+          :class="{ active: filter == 'active' }"
+          @click="filter = 'active'"
+        >
+          Active
+        </button>
+        <button
+          :class="{ active: filter == 'completed' }"
+          @click="filter = 'completed'"
+        >
+          Completed
+        </button>
+      </div>
+
+      <transition name="fade">
+        <div>
+          <button v-if="showClearCompletedButton" @click="clearCompleted">
+            Clear Completed
+          </button>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
 
 <script>
+import TodoItem from "./TodoItem";
+
 export default {
   name: "TodoList",
+  components: {
+    TodoItem
+  },
   data() {
     return {
       newTodo: "",
       idForTodo: 3,
       beforeEditCache: "",
+      filter: "all",
       todos: [
         {
           id: 1,
@@ -57,12 +97,25 @@ export default {
       ]
     };
   },
-  directives: {
-    focus: {
-      // directive definition
-      inserted: function(el) {
-        el.focus();
+  computed: {
+    remaining() {
+      return this.todos.filter(todo => !todo.completed).length;
+    },
+    anyRemaining() {
+      return this.remaining != 0;
+    },
+    todosFiltered() {
+      if (this.filter == "all") {
+        return this.todos;
+      } else if (this.filter == "active") {
+        return this.todos.filter(todo => !todo.completed);
+      } else if (this.filter == "completed") {
+        return this.todos.filter(todo => todo.completed);
       }
+      return this.todos;
+    },
+    showClearCompletedButton() {
+      return this.todos.filter(todo => todo.completed).length > 0;
     }
   },
   methods: {
@@ -80,19 +133,26 @@ export default {
       this.newTodo = "";
       this.idForTodo++;
     },
-    removeTodo(index) {
+    removeTodo(id) {
+      const index = this.todos.findIndex(item => item.id == id);
       this.todos.splice(index, 1);
     },
-    editTodo(todo) {
-      this.beforeEditCache = todo.title;
-      todo.editing = true;
-    },
+
     doneEdit(todo) {
+      if (todo.title.trim() == "") {
+        todo.title = this.beforeEditCache;
+      }
       todo.editing = false;
     },
-    cancelEdit(todo) {
-      todo.title = this.beforeEditCache;
-      todo.editing = false;
+    checkAllTodos() {
+      this.todos.forEach(todo => (todo.completed = event.target.checked));
+    },
+    clearCompleted() {
+      this.todos = this.todos.filter(todo => !todo.completed);
+    },
+    finishedEdit(data) {
+      const index = this.todos.findIndex(item => item.id == data.id);
+      this.todos.splice(index, 1, data);
     }
   }
 };
@@ -164,6 +224,7 @@ button {
   font-size: 14px;
   background-color: white;
   appearance: none;
+
   &:hover {
     background: lightgreen;
   }
