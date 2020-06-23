@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="Todos">
     <h1>{{ msg }}</h1>
   </div>
 </template>
@@ -15,8 +15,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+h1,
+h2 {
+  font-weight: normal;
+  color: grey;
 }
 ul {
   list-style-type: none;
@@ -28,5 +30,8 @@ li {
 }
 a {
   color: #42b983;
+}
+body {
+  background: rgb(128, 91, 43);
 }
 </style>

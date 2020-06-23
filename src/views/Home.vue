@@ -1,7 +1,6 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" class="logo" src="../assets/logo.png" />
-    <Todo msg="Welcome to Your Vue.js App" />
+    <Todo msg="todos" />
     <TodoList />
   </div>
 </template>
