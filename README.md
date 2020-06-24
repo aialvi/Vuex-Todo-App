@@ -1,5 +1,7 @@
 # vue-todo
 
+Live: https://hardcore-spence-ae2e6d.netlify.app/
+
 ## Project setup
 ```
 npm install
